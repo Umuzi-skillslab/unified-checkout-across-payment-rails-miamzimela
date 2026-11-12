@@ -6,7 +6,7 @@ import com.paynestsystem.payment.PaymentProcessor;
 
 /**
  * Orchestrates order-related operations such as printing receipts
- * and processing checkout payments.
+ * and checking out with a chosen payment method.
  *
  * OrderService asks OrderFormatter to build the text, then prints it.
  * If we later want to email the receipt, we change only this class.
@@ -34,14 +34,8 @@ public class OrderService {
     }
 
     /**
-     * Checks out an order using the supplied payment method.
-     * Calculates the order total once and passes it to the chosen
-     * PaymentMethod — this method never checks which rail it's
-     * talking to, so new payment types require no changes here.
-     *
-     * @param order  The order to check out. Must not be null.
-     * @param method The payment rail to use. Must not be null.
-     * @return true if the payment succeeded, false otherwise.
+     * Checks out an order with the given payment method.
+     * Returns true only if the payment went through.
      */
     public boolean checkout(Order order, PaymentMethod method) {
         if (order == null) {
@@ -53,11 +47,14 @@ public class OrderService {
             return false;
         }
 
+        // Total is worked out once, here, and handed to the rail as is
         double amount = order.calculateTotal().doubleValue();
         boolean success = paymentProcessor.processPayment(method, amount);
 
         if (success) {
             System.out.println("Order " + order.getId() + " completed.");
+        } else {
+            System.out.println("Order " + order.getId() + " not completed.");
         }
 
         return success;

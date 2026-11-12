@@ -1,13 +1,8 @@
 package com.paynestsystem.payment;
 
-/**
- * Accepts any PaymentMethod implementation and processes a payment against it.
- * This class never checks which concrete rail it's talking to — it only relies
- * on the PaymentMethod contract, so new rails (e.g. BuyNowPayLaterPayment) can
- * be added later without any changes here.
- */
 public class PaymentProcessor {
 
+    // Works with any PaymentMethod, so a new rail needs no changes here
     public boolean processPayment(PaymentMethod method, double amount) {
         boolean success = method.processPayment(amount);
 
