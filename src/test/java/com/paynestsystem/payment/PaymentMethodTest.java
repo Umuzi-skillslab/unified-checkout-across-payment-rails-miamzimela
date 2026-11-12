@@ -25,7 +25,7 @@ class PaymentMethodTest {
 
     @Test
     void walletPaymentProcessesSuccessfullyAndReportsCorrectType() {
-        PaymentMethod wallet = new WalletPayment();
+        PaymentMethod wallet = new WalletPayment(20000);
 
         assertTrue(wallet.processPayment(12400));
         assertEquals("WALLET", wallet.getPaymentType());
@@ -36,7 +36,7 @@ class PaymentMethodTest {
         PaymentProcessor processor = new PaymentProcessor();
 
         PaymentMethod card = new CardPayment();
-        PaymentMethod wallet = new WalletPayment();
+        PaymentMethod wallet = new WalletPayment(20000);
 
         assertTrue(processor.processPayment(card, 12400));
         assertTrue(processor.processPayment(wallet, 12400));
