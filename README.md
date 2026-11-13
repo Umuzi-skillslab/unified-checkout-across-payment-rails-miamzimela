@@ -29,4 +29,25 @@ The payment tests cover all three rails, rejected amounts, the card limit and EF
 
 ## Design notes: payment abstraction
 
-Checkout is built against the PaymentMethod interface instead of one method with a branch for each payment type. CardPayment, EftPayment and WalletPayment each implement the interface and keep their own console messages and rules. OrderService.checkout and PaymentProcessor depend only on the PaymentMethod contract, so adding a rail such as BuyNowPayLaterPayment means writing one new class and wiring it in the demo, with no change to the order total calculation. A single large method using if/else or switch statements would have to be edited for every new rail, which risks
+Checkout is built against the PaymentMethod interface instead of one method with a branch for each payment type. CardPayment, EftPayment and WalletPayment each implement the interface and keep their own console messages and rules. OrderService.checkout and PaymentProcessor depend only on the PaymentMethod contract, so adding a rail such as BuyNowPayLaterPayment means writing one new class and wiring it in the demo, with no change to the order total calculation. A single large method using if/else or switch statements would have to be edited for every new rail, which risks breaking rails that already work.
+
+Rules sit at two levels. The amount check (the amount must be greater than R0) is written once as a default method on PaymentMethod, so every rail inherits it. Each rail then adds a rule that only it needs: the card has a spending limit of R50000, EFT has a minimum of R10, and the wallet checks its balance and reduces it after a successful payment. These limits are example values for the demo. A rail answers a request with true or false, and a decline is a normal answer and not an error, so checkout simply reports that the order was not completed.
+
+## Class diagram
+
+```
+            <<interface>>
+             PaymentMethod
+   +processPayment(amount): boolean
+   +getPaymentType(): String
+   +isValidAmount(amount): boolean
+                 ^
+                 | implements
+      +----------+----------+
+      |          |          |
+CardPayment  EftPayment  WalletPayment
+-CARD_LIMIT  -EFT_MINIMUM -balance
+
+PaymentProcessor
+   +processPayment(method: PaymentMethod, amount: double): boolean
+```
