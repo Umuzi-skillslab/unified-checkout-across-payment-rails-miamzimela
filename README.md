@@ -25,29 +25,8 @@ To try another rail, change the payment line in `PayNestApplication.java` to `ne
 mvn test
 ```
 
-The tests cover all three rails, rejected amounts, a wallet decline travelling back through checkout, and that the amount charged equals the order total.
+The payment tests cover all three rails, rejected amounts, the card limit and EFT minimum at their boundaries, a wallet decline travelling back through checkout, and that the amount charged equals the order total. The domain tests cover order totals with several items, an empty order, invalid quantities, and a missing product or customer.
 
 ## Design notes: payment abstraction
 
-Checkout is built against the PaymentMethod interface instead of one method with a branch for each payment type. CardPayment, EftPayment and WalletPayment each implement the interface and keep their own console messages and rules. OrderService.checkout and PaymentProcessor depend only on the PaymentMethod contract, so adding a rail such as BuyNowPayLaterPayment means writing one new class and wiring it in the demo, with no change to the order total calculation. A single large method using if/else or switch statements would have to be edited for every new rail, which risks breaking rails that already work.
-
-Rules sit at two levels. The amount check (the amount must be greater than R0) is written once as a default method on PaymentMethod, so every rail inherits it. The wallet adds a rule of its own, a balance check, because only it needs one. A rail answers a request with true or false, and a decline is a normal answer and not an error, so checkout simply reports that the order was not completed.
-
-## Class diagram
-
-```
-            <<interface>>
-             PaymentMethod
-   +processPayment(amount): boolean
-   +getPaymentType(): String
-   +isValidAmount(amount): boolean
-                 ^
-                 | implements
-      +----------+----------+
-      |          |          |
-CardPayment  EftPayment  WalletPayment
-                         -balance: double
-
-PaymentProcessor
-   +processPayment(method: PaymentMethod, amount: double): boolean
-```
+Checkout is built against the PaymentMethod interface instead of one method with a branch for each payment type. CardPayment, EftPayment and WalletPayment each implement the interface and keep their own console messages and rules. OrderService.checkout and PaymentProcessor depend only on the PaymentMethod contract, so adding a rail such as BuyNowPayLaterPayment means writing one new class and wiring it in the demo, with no change to the order total calculation. A single large method using if/else or switch statements would have to be edited for every new rail, which risks
