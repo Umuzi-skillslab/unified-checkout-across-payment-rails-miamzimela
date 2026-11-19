@@ -4,6 +4,8 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
+import java.math.BigDecimal;
+
 import org.junit.jupiter.api.Test;
 
 import com.paynestsystem.domain.Customer;
@@ -31,7 +33,7 @@ class PaymentMethodTest {
 
     @Test
     void walletPaymentProcessesSuccessfullyAndReportsCorrectType() {
-        PaymentMethod wallet = new WalletPayment(20000);
+        PaymentMethod wallet = new WalletPayment("20000");
 
         assertTrue(wallet.processPayment(12400));
         assertEquals("WALLET", wallet.getPaymentType());
@@ -42,7 +44,7 @@ class PaymentMethodTest {
         PaymentProcessor processor = new PaymentProcessor();
 
         PaymentMethod card = new CardPayment();
-        PaymentMethod wallet = new WalletPayment(20000);
+        PaymentMethod wallet = new WalletPayment("20000");
 
         assertTrue(processor.processPayment(card, 12400));
         assertTrue(processor.processPayment(wallet, 12400));
@@ -52,7 +54,7 @@ class PaymentMethodTest {
     void railsRejectZeroAndNegativeAmounts() {
         PaymentMethod card = new CardPayment();
         PaymentMethod eft = new EftPayment();
-        PaymentMethod wallet = new WalletPayment(1000);
+        PaymentMethod wallet = new WalletPayment("1000");
 
         assertFalse(card.processPayment(0));
         assertFalse(card.processPayment(-50));
@@ -64,23 +66,23 @@ class PaymentMethodTest {
 
     @Test
     void walletDeclinesWhenAmountExceedsBalance() {
-        WalletPayment wallet = new WalletPayment(500);
+        WalletPayment wallet = new WalletPayment("500");
 
         boolean paid = wallet.processPayment(600);
 
         assertFalse(paid);
-        assertEquals(500, wallet.getBalance(), 0.001);
+        assertEquals(0, new BigDecimal("500").compareTo(wallet.getBalance()));
     }
 
     @Test
     void checkoutReturnsFalseWhenWalletCannotCoverTheOrder() {
         Order order = buildOrder();
-        WalletPayment wallet = new WalletPayment(100);
+        WalletPayment wallet = new WalletPayment("100");
 
         boolean completed = new OrderService().checkout(order, wallet);
 
         assertFalse(completed);
-        assertEquals(100, wallet.getBalance(), 0.001);
+        assertEquals(0, new BigDecimal("100").compareTo(wallet.getBalance()));
     }
 
     @Test
