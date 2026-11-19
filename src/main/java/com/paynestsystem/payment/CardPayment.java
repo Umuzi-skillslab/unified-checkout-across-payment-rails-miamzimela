@@ -6,8 +6,7 @@ public class CardPayment implements PaymentMethod {
 
     @Override
     public boolean processPayment(double amount) {
-        if (!isValidAmount(amount)) {
-            System.out.println("Card payment rejected: amount must be greater than R0");
+        if (!checkAmount(amount)) {
             return false;
         }
 

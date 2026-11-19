@@ -20,8 +20,7 @@ public class WalletPayment implements PaymentMethod {
 
     @Override
     public boolean processPayment(double amount) {
-        if (!isValidAmount(amount)) {
-            System.out.println("Wallet payment rejected: amount must be greater than R0");
+        if (!checkAmount(amount)) {
             return false;
         }
 
