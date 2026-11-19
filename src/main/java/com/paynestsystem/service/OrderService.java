@@ -1,5 +1,7 @@
 package com.paynestsystem.service;
 
+import java.math.BigDecimal;
+
 import com.paynestsystem.domain.Order;
 import com.paynestsystem.payment.PaymentMethod;
 import com.paynestsystem.payment.PaymentProcessor;
@@ -35,7 +37,8 @@ public class OrderService {
 
     /**
      * Checks out an order with the given payment method.
-     * Returns true only if the payment went through.
+     * Returns true only if the payment went through. An order whose total
+     * has fractions of a cent is refused, because it cannot be charged exactly.
      */
     public boolean checkout(Order order, PaymentMethod method) {
         if (order == null) {
@@ -47,8 +50,16 @@ public class OrderService {
             return false;
         }
 
-        // Total is worked out once, here, and handed to the rail as is
-        double amount = order.calculateTotal().doubleValue();
+        BigDecimal total = order.calculateTotal();
+
+        if (total.stripTrailingZeros().scale() > 2) {
+            System.out.println("Order " + order.getId() + " not completed: total of R"
+                    + total.toPlainString() + " has fractions of a cent");
+            return false;
+        }
+
+        // The only place the exact total becomes a double, because PaymentMethod takes a double
+        double amount = total.doubleValue();
         boolean success = paymentProcessor.processPayment(method, amount);
 
         if (success) {
